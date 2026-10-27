@@ -1,0 +1,9 @@
+# DUB-200 research notes
+
+- Base selected: DUB-1 v1.3.0, tag commit `e6fe7b8f8f3114019bb36b5b536ad458eacd2c2d`, GPL-3.0-only. The upstream README describes DUB-1 as a generative dub-techno FM-1 firmware with chord stabs, four unequal ping loops, generative bass/drums/noise, an eight-bar arrangement, browser emulator and USB installer. https://github.com/sbegueria/fm1-dub/tree/v1.3.0
+- DUB-1’s published manual documents a 90–140 BPM Key Tempo range and eight factory pieces. It has screen reader support and warns that custom firmware installation is at the owner’s risk. https://sbegueria.github.io/fm1-dub/manual/
+- Upstream PLAN.md’s own sample study says whole samples cannot fit RAM, proposes XIP flash streaming, and estimates roughly 300 KB could be allocated safely after checking update-loader behavior.
+- In the v1.3.0 source, `tests/storage_test.c` reserves 0xA0000–0xDBFFF (240 KiB) as sample slots. This supports exactly ten 24-KiB raw slots: two for each of the five UI layers (Chord, Pings, Bass, Drums, Noise).
+- The update package is limited to the app region ending at 0x93000; the v1.3.0 update loader writes that app region, so a DUB-200 user-sample bank starting at 0xA0000 is outside normal firmware-update writes. Stock updates or factory erase can still remove it.
+- DUB-200 design decision: use ten global slots (A/B per layer), 11.025 kHz mono PCM8, each with a 256-byte committed header and <=24,320 bytes of payload (about 2.2 sec). A piece saves only an Off/A/B/Alt selector per layer; audio payloads are independent of projects. First-release playback is one mono overlay voice per layer, triggered by the existing layer event rather than replacing DUB-1’s generators.
+- Font assets already included under SIL OFL: Terminus and Barlow. DUB-200 can use Terminus for an industrial pixel/terminal display without bringing in a new third-party font.
